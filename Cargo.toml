@@ -1,0 +1,15 @@
+[package]
+name = "notion-gpui"
+version = "0.1.0"
+edition = "2024"
+description = "A local-first GPUI team workspace with a task board and AI chat"
+license = "MIT"
+
+[dependencies]
+atomic-write-file = "0.3.1"
+directories = "6.0.0"
+futures = { version = "0.3.34", default-features = false, features = ["std", "async-await"] }
+gpui-kit = "=0.8.0"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+ureq = { version = "3.5.0", default-features = false, features = ["rustls", "json"] }

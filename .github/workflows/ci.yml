@@ -1,0 +1,46 @@
+name: Desktop CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  desktop:
+    name: Desktop (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    env:
+      CARGO_BUILD_JOBS: 2
+      CARGO_PROFILE_DEV_DEBUG: 0
+      CARGO_PROFILE_TEST_DEBUG: 0
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang pkg-config \
+            libfontconfig-dev libfreetype-dev libwayland-dev wayland-protocols \
+            libxkbcommon-x11-dev libx11-xcb-dev libxcb1-dev libxcb-render0-dev \
+            libxcb-shape0-dev libxcb-xfixes0-dev libssl-dev libvulkan-dev libvulkan1
+      - name: Install stable Rust
+        run: rustup update stable --no-self-update
+      - name: Install quality components
+        run: rustup component add rustfmt clippy
+      - name: Format
+        run: cargo fmt --all -- --check
+      - name: Lint
+        run: cargo clippy --locked --all-targets -- -D warnings
+      - name: Test
+        run: cargo test --locked
+      - name: Build desktop binary
+        run: cargo build --locked
